@@ -1,0 +1,7 @@
+import java;
+import java;
+import lap;
+
+public class Demo{
+	var a =0 , b = new Demo(e,new Demo(e,b));
+}
