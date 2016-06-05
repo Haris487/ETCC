@@ -1,0 +1,10 @@
+import java;
+import ahmed;
+
+public class fabi{
+
+var a = 5 ;
+var b = 5 , c, d = a;
+
+
+}

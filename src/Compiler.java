@@ -18,6 +18,10 @@ public class Compiler {
 		SyntaxTree st = new SyntaxTree(l.tokenSet);
 		System.out.println("Syntax Completed");
 		System.out.println(st.isCorrect);
+		for(int i = 0 ; i < st.symbolTable.size() ; i++){
+		System.out.println(st.symbolTable.get(i).name + "   " + st.symbolTable.get(i).type + "  " + st.symbolTable.get(i).scope);
+		}
+		System.out.println(st.Error);
 		
 		//l.makeTokens();
 		/*l.toChars();*/

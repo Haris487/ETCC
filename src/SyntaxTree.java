@@ -4,10 +4,14 @@ import java.io.*;
 import javax.swing.*;
 
 public class SyntaxTree {
+	String Error = "Sementic Completed\n";
 	Tokens[] tokenSet = null;
 	int ind = 0;
 	int I = 0;
 	boolean isCorrect = false;
+	Stack<Integer> st = new Stack<Integer>();
+	ArrayList<Sym> symbolTable = new ArrayList<Sym>();
+	int scope = 0;
 	public SyntaxTree(Tokens[] tokenSet){
 		this.tokenSet = tokenSet;
 		node("<syntax tree>");
@@ -30,11 +34,13 @@ public class SyntaxTree {
 	}
 	
 	public boolean importStatements(){
+		String n;
 		node("<importStatement>");
 		if(tokenSet[ind].cp.equals("Import_export")){
 			System.out.println(tab()+tokenSet[ind].cp);
 			ind++;
 			if(tokenSet[ind].cp.equals("ID")){
+				if(importcheaker(tokenSet[ind].vp))  err(tokenSet[ind].vp + "no such file present to import at "+tokenSet[ind].lineNo + "\n" );
 				System.out.println(tab()+tokenSet[ind].cp);
 				ind++;
 				if(tokenSet[ind].cp.equals(";")){
@@ -78,9 +84,11 @@ public class SyntaxTree {
 					if(tokenSet[ind].cp.equals("ID")){
 						node();
 						if(tokenSet[ind].cp.equals("{")){
+							scopein();
 							node();
 							if(class_body()){
 								if(tokenSet[ind].cp.equals("}")){
+									scopeout();
 									node();
 									I--;
 									return true;
@@ -150,7 +158,7 @@ public class SyntaxTree {
 	}
 	public boolean class_body(){
 		node("<class_body>");
-		if(class_mst()){
+		if(class_mst()){ 
 			I--;
 			return true;
 		}
@@ -235,12 +243,16 @@ public class SyntaxTree {
 		}
 	}
 	public boolean int_dec(){
+		String n = null ; 
+		String t  = null;
 		node("<int_dec>");
 		if(tokenSet[ind].cp.equals("DT")){
+			t = tokenSet[ind].vp; 
 			node();
 			if(tokenSet[ind].cp.equals("ID")){
+				n = tokenSet[ind].vp;
 				node();
-				if(list_int_dec()){
+				if(list_int_dec(t,n)){
 					I--;
 					return true;
 				}
@@ -258,10 +270,19 @@ public class SyntaxTree {
 		}
 		// Object Decleration e.g Token t  = new Token(parameters);
 		else if(tokenSet[ind].cp.equals("ID")){
+			t = tokenSet[ind].vp;
+			/*
+			 * 
+			 *  Class LOOK UP Function is missing TODO
+			 * 
+			 * 
+			 */
+			
 			node();
 			if(tokenSet[ind].cp.equals("ID")){
+				n = tokenSet[ind].vp;
 				node();
-				if(list_int_dec()){
+				if(list_int_dec(t,n)){
 					I--;
 					return true;
 				}
@@ -279,13 +300,21 @@ public class SyntaxTree {
 			return false;
 		}
 	}
-	public boolean list_int_dec(){
+	public boolean list_int_dec(String t , String n){
+		int i;
 		node("<list_int_dec>");
 		if(tokenSet[ind].cp.equals(",")){
+			if(lookup(n) == null){
+				insert(n,t);
+			}
+			else{
+				System.out.println("ERROR . . ! duplicate local "+t+" "+ n );
+			}
 			node();
 			if(tokenSet[ind].cp.equals("ID")){
+				n = tokenSet[ind].vp;
 				node();
-				if(list_int_dec()){
+				if(list_int_dec(t,n)){
 					I--;
 					return true;
 				}
@@ -301,8 +330,15 @@ public class SyntaxTree {
 			
 		}
 		else if(tokenSet[ind].cp.equals("ASS_OP")){
+			/*
+			 * 
+			 * TODO typecasting function is missing
+			 * 
+			 * 
+			 * 
+			 */
 			node();
-			if(list_int_dec_prime()){
+			if(list_int_dec_prime(t,n)){
 				I--;
 				return true;
 				
@@ -314,6 +350,12 @@ public class SyntaxTree {
 			
 		}
 		else if(tokenSet[ind].cp.equals(";")){
+			if(lookup(n) == null){
+				insert(n,t);
+			}
+			else{
+				System.out.println("ERROR . . ! duplicate lacal "+t+" "+ n );
+			}
 			node();
 			I--;
 			return true;
@@ -325,11 +367,12 @@ public class SyntaxTree {
 		}
 	}
 	
-	public boolean list_int_dec_prime(){
+	public boolean list_int_dec_prime(String t , String n){
 		node("<list_int_dec_prime>");
 		if(tokenSet[ind].cp.equals("ID")){
+			String t1 = lookup(n);
 			node();
-			if(list_int_dec()){
+			if(list_int_dec(t , n)){
 				I--;
 				return true;
 			}
@@ -339,7 +382,7 @@ public class SyntaxTree {
 			}
 		}
 		else if(constant()){
-			if(list_int_dec()){
+			if(list_int_dec(t , n)){
 				I--;
 				return true;
 			}
@@ -466,7 +509,7 @@ public class SyntaxTree {
 		return align;
 	}
 	public void node(){
-		System.out.println(tab()+tokenSet[ind].cp);
+		System.out.println(tab()+tokenSet[ind].cp+"("+tokenSet[ind].vp+")");
 		ind++;
 	}
 	public void node(String arg){
@@ -476,4 +519,84 @@ public class SyntaxTree {
 	public void nul(){
 		System.out.println(tab()+"Null");
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/*
+	 * 
+	 * 
+	 *		_      ______                   _______                 ______
+	 *     /      |           |\        /|  |        |\        /       |
+	 *    |       |           | \      / |  |        | \      /        |
+	 *     \_     |______     |  \    /  |  |_______ |  \    /         |
+	 *       |    |           |   \  /   |  |        |   \  /          |
+	 *      _/    |______     |    \/    |  |_______ |    \/           |
+	 * 
+	 * 
+	 */
+	
+	void scopein(){
+		scope++;
+		st.push(scope);
+	}
+	void scopeout(){
+		scope--;
+		st.pop();
+	}
+	void insert(String n , String t ){
+		Sym ls = new Sym(n,t,Scope());
+		symbolTable.add(ls);
+		System.out.println("symbol table updated ("+ls.name + "   " + ls.type + "  " + ls.scope+")");
+		
+	}
+	String lookup(String n){
+		Sym ls;
+		for(int i = 0; i < symbolTable.size() ; i++){
+			ls = symbolTable.get(i);
+			if(ls.scope == Scope() && ls.name.equals(n) ){
+				return ls.type;
+			
+			}
+		
+		
+		
+		}
+		return null;
+	}
+	int Scope(){
+		 return st.peek();
+	}
+	
+	String type(String tr ,String tl , String ope){
+		
+		return null;
+	}
+	
+	boolean importcheaker(String n){
+		boolean b = false;
+		try {
+			Scanner s = new Scanner(new File(n+".etcl"));
+			b = true;
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			b = false;
+		}
+		return b;
+	}
+	void err(String s){
+		Error += s;
+	}
+	
+	
 }
