@@ -4,6 +4,30 @@ import java.io.*;
 import javax.swing.*;
 
 public class SyntaxTree {
+	
+	/*
+	 * 
+	 *  Sementic variables
+	 * 
+	 * 
+	 */
+	
+	String stati = "";
+	String al = "";
+	
+	
+	ArrayList<Sym> globleList = new ArrayList<Sym>();
+	ArrayList<Sym> classList = new ArrayList<Sym>();
+	ArrayList<Sym> localList = new ArrayList<Sym>();
+	
+	/*
+	 * 
+	 * 
+	 * Sementic variable
+	 * 
+	 * 
+	 */
+	
 	String Error = "Sementic Completed\n";
 	Tokens[] tokenSet = null;
 	int ind = 0;
@@ -12,7 +36,12 @@ public class SyntaxTree {
 	Stack<Integer> st = new Stack<Integer>();
 	ArrayList<Sym> symbolTable = new ArrayList<Sym>();
 	int scope = 0;
+	
+	
+	
+	
 	public SyntaxTree(Tokens[] tokenSet){
+		st.push(scope);
 		this.tokenSet = tokenSet;
 		node("<syntax tree>");
 		// <Syntax Tree> -- > <importStatement><mainFunction><classDecelaration> 
@@ -40,7 +69,10 @@ public class SyntaxTree {
 			System.out.println(tab()+tokenSet[ind].cp);
 			ind++;
 			if(tokenSet[ind].cp.equals("ID")){
-				if(importcheaker(tokenSet[ind].vp))  err(tokenSet[ind].vp + "no such file present to import at "+tokenSet[ind].lineNo + "\n" );
+				if(importcheaker(tokenSet[ind].vp)){
+					
+				}
+				else err(tokenSet[ind].vp + " no such file present to import at "+tokenSet[ind].lineNo + "\n" );
 				System.out.println(tab()+tokenSet[ind].cp);
 				ind++;
 				if(tokenSet[ind].cp.equals(";")){
@@ -75,13 +107,18 @@ public class SyntaxTree {
 		return true;
 	}
 	public boolean classDeclaration(){
+		String acc = "";
+		String n = "";
+		String st;
 		node("<classDeclaration>");
 		if(tokenSet[ind].cp.equals("ACC-MOD")){
+			acc = tokenSet[ind].vp;
 			node();
 			if(static_non()){
 				if(tokenSet[ind].cp.equals("class")){
 					node();
 					if(tokenSet[ind].cp.equals("ID")){
+						n = tokenSet[ind].vp;
 						node();
 						if(tokenSet[ind].cp.equals("{")){
 							scopein();
@@ -89,6 +126,8 @@ public class SyntaxTree {
 							if(class_body()){
 								if(tokenSet[ind].cp.equals("}")){
 									scopeout();
+									insert(acc,stati , n , "null"); 
+									
 									node();
 									I--;
 									return true;
@@ -132,11 +171,13 @@ public class SyntaxTree {
 	public boolean static_non(){
 		node("<static_non>");
 		if(tokenSet[ind].cp.equals("static")){
+			stati = "static";
 			node();
 			I--;
 			return true;
 		}
 		else if(tokenSet[ind].cp.equals("virtual")){
+			stati = "virtual";
 			node();
 			I--;
 			return true;
@@ -556,8 +597,8 @@ public class SyntaxTree {
 	}
 	void insert(String n , String t ){
 		Sym ls = new Sym(n,t,Scope());
-		symbolTable.add(ls);
-		System.out.println("symbol table updated ("+ls.name + "   " + ls.type + "  " + ls.scope+")");
+		localList.add(ls);
+		System.out.println("Inserted in Local List ("+ls.name + "   " + ls.type + "  " + ls.scope+")");
 		
 	}
 	String lookup(String n){
@@ -573,6 +614,27 @@ public class SyntaxTree {
 		
 		}
 		return null;
+	}
+	String lookup(String n , boolean any_thing_just_for_differentiate){
+		Sym ls;
+		for(int i = 0; i < symbolTable.size() ; i++){
+			ls = symbolTable.get(i);
+			if(ls.name.equals(n) ){
+				return ls.parent;
+			
+			}
+		
+		
+		
+		}
+		return null;
+	}
+	void insert(String acc , String stat , String n , String parent){
+		Sym s = new Sym(n,"class",Scope());
+		s.acc = acc;
+		s.stat = stat;
+		s.parent = parent;
+		classList.add(s);
 	}
 	int Scope(){
 		 return st.peek();

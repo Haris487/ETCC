@@ -1,6 +1,5 @@
-import java;
-import java;
-import lap;
+
+import e;
 
 public class Demo{
 	var a =0;
