@@ -235,13 +235,20 @@ public class SyntaxTree {
 			return true;
 		}
 	}
-	public boolean parameter_declear(){
+	public boolean parameter_declear(String pl1){
+		String pl = "";
+		String t = "";
+		String n = "";
 		node("<parameter_declear>");
 		if(tokenSet[ind].cp.equals("DT")||tokenSet[ind].cp.equals("ID")){
+			t = tokenSet[ind].vp;
+			pl += t;
 			node();
 			if(tokenSet[ind].cp.equals("ID")){
+				n = tokenSet[ind].vp;
+				insert(n,t);
 				node();
-				if(list_parameter_declear()){
+				if(list_parameter_declear(pl)){
 					I--;
 					return true;
 				}
@@ -263,11 +270,11 @@ public class SyntaxTree {
 		}
 		
 	}
-	public boolean list_parameter_declear(){
+	public boolean list_parameter_declear(String pl){
 		node("<list_parameter_declear>");
 		if(tokenSet[ind].cp.equals(",")){
 			node();
-			if(parameter_declear()){
+			if(parameter_declear(pl)){
 				I--;
 				return true;
 			}
@@ -311,7 +318,11 @@ public class SyntaxTree {
 		}
 		// Object Decleration e.g Token t  = new Token(parameters);
 		else if(tokenSet[ind].cp.equals("ID")){
+			if(lookup(tokenSet[ind].vp) != null)
 			t = tokenSet[ind].vp;
+			else{
+				err("Class "+tokenSet[ind].vp + " not found at line no "+ tokenSet[ind].lineNo);
+			}
 			/*
 			 * 
 			 *  Class LOOK UP Function is missing TODO

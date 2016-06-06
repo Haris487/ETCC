@@ -1,8 +1,12 @@
 
 import e;
+public class int{
+ // CFG problem only single class read per file
+}
 
 public class Demo{
 	var a =0;
 	var b ; 
 	int c;
+	var f;
 }

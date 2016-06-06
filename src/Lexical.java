@@ -185,6 +185,15 @@ public class Lexical {
 						break;
 					}
 				case '/':
+					if(ch[i+1] == '/'){
+						i++;
+						while(ch[i] != '~'){
+							i++;
+							//System.out.println("Cheacking for comment "+ ch[i]);
+						}
+						temp = "";
+						break;
+					}
 				case '*':
 				case '%':
 				case '=':
